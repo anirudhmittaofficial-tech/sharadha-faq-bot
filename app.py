@@ -1,17 +1,19 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import anthropic
+import google.generativeai as genai
 import os
 
 app = Flask(__name__)
 CORS(app)
 
-api_key = os.environ.get("ANTHROPIC_API_KEY")
+api_key = os.environ.get("GEMINI_API_KEY")
 
 if not api_key:
-    raise ValueError("ANTHROPIC_API_KEY environment variable is missing")
+    raise ValueError("GEMINI_API_KEY environment variable is missing")
 
-client = anthropic.Anthropic(api_key=api_key)
+genai.configure(api_key=api_key)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # ─────────────────────────────────────────────
 #  REAL SharadhaStores Knowledge Base
@@ -205,14 +207,12 @@ def chat():
     # Call Claude API
         # Call Claude API
     try:
-        response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=512,
-            system=SYSTEM_PROMPT,
-            messages=messages,
-        )
+        prompt = SYSTEM_PROMPT + "\n\nUser: " + user_message
 
-        reply = response.content[0].text
+        response = model.generate_content(prompt)
+
+        reply = response.text
+
         return jsonify({"reply": reply})
 
     except Exception as e:
