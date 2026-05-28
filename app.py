@@ -203,22 +203,20 @@ def chat():
     messages.append({"role": "user", "content": user_message})
 
     # Call Claude API
+        # Call Claude API
     try:
-    response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=512,
-        system=SYSTEM_PROMPT,
-        messages=messages,
-    )
+        response = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=512,
+            system=SYSTEM_PROMPT,
+            messages=messages,
+        )
 
-    reply = response.content[0].text
-    return jsonify({"reply": reply})
+        reply = response.content[0].text
+        return jsonify({"reply": reply})
 
-except Exception as e:
-    return jsonify({"error": str(e)}), 500
-
-    reply = response.content[0].text
-    return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/health", methods=["GET"])
