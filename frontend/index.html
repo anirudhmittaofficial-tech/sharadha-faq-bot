@@ -576,7 +576,7 @@
         chatHistory.push({ role: 'user', content: text }); 
         chatHistory.push({ role: 'assistant', content: data.reply }); 
         appendMessage(data.reply, 'bot'); 
-      } else { console.log(data); appendMessage(JSON.stringify(data), 'bot');
+      } else { console.log(data); appendMessage(JSON.stringify(data), 'bot'); }
     } catch (err) {
       removeTyping();
       appendMessage('⚠️ Cannot connect to server. Make sure the backend is running on localhost:5000 (or update BACKEND_URL).', 'bot');
