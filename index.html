@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sharadha Stores — Customer Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary:   #111111;
+      --bg-secondary: #1a1a1a;
+      --bg-input:     #222222;
+      --bg-user:      #c8552a;
+      --bg-bot:       #242424;
+      --accent:       #e8813a;
+      --accent-soft:  #c8552a22;
+      --gold:         #d4a843;
+      --text-primary: #f0ece4;
+      --text-muted:   #888880;
+      --border:       #2e2e2e;
+      --radius-msg:   18px;
+      --font-body:    'DM Sans', sans-serif;
+      --font-serif:   'Noto Serif', serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      overflow: hidden;
+    }
+
+    /* ── App Shell ── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+      background: var(--bg-primary);
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4a843, #c8552a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px #c8552a44;
+    }
+
+    .header-info { flex: 1; }
+    .header-name {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-name .verified {
+      width: 14px; height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: white;
+    }
+
+    .header-sub {
+      font-size: 11px;
+      color: #4caf82;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .header-sub::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4caf82;
+      animation: pulse 2s infinite;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .header-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .header-btn:hover { background: var(--border); }
+
+    /* ── Background Pattern ── */
+    .chat-bg {
+      position: absolute;
+      inset: 0;
+      top: 71px;
+      bottom: 80px;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .chat-bg svg {
+      width: 100%; height: 100%;
+      opacity: 0.04;
+    }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Date Divider ── */
+    .date-divider {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px 12px;
+      align-self: center;
+      margin: 8px 0;
+    }
+
+    /* ── Message Row ── */
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      animation: msgIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .msg-row.user { flex-direction: row-reverse; }
+
+    .bot-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4a843, #c8552a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: var(--radius-msg);
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+      word-break: break-word;
+    }
+
+    .bubble.bot {
+      background: var(--bg-bot);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text-primary);
+    }
+    .bubble.user {
+      background: var(--bg-user);
+      border-bottom-right-radius: 4px;
+      color: #fff;
+    }
+
+    .bubble-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+    .bubble.user .bubble-time { color: rgba(255,255,255,0.6); }
+
+    /* ── Typing Indicator ── */
+    .typing {
+      display: flex;
+      gap: 4px;
+      padding: 14px 16px;
+      background: var(--bg-bot);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-msg);
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+    .typing span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typingDot 1.2s ease-in-out infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ── Quick Replies ── */
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 12px 8px;
+      z-index: 1;
+    }
+    .quick-btn {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .quick-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* ── Input Area ── */
+    .input-area {
+      padding: 10px 12px 16px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 6px 6px 6px 16px;
+      transition: border-color 0.2s;
+    }
+    .input-row:focus-within {
+      border-color: var(--accent);
+    }
+
+    .input-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-body);
+      line-height: 1.4;
+      padding: 6px 0;
+    }
+    .input-row input::placeholder { color: var(--text-muted); }
+
+    .send-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: #d4692a; }
+    .send-btn:active { transform: scale(0.92); }
+    .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+    /* ── Welcome Card ── */
+    .welcome-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 8px 0 16px;
+      text-align: center;
+    }
+    .welcome-logo {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    .welcome-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .welcome-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .welcome-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .chip {
+      font-size: 11px;
+      background: var(--accent-soft);
+      border: 1px solid #c8552a44;
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    /* ── Animations ── */
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes typingDot {
+      0%, 80%, 100% { transform: scale(1); opacity: 0.4; }
+      40%            { transform: scale(1.3); opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── Scrollbar hidden on mobile ── */
+    @media (max-width: 480px) {
+      .app { max-width: 100%; }
+    }
+
+    /* Desktop centering wrapper */
+    @media (min-width: 481px) {
+      body {
+        background: #0a0a0a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .app {
+        height: 95dvh;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: 0 24px 80px #00000088;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-avatar">🍛</div>
+    <div class="header-info">
+      <div class="header-name">
+        Sharadha Stores
+        <span class="verified">✓</span>
+      </div>
+      <div class="header-sub">Customer Support</div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" title="Search" onclick="alert('Search coming soon!')">🔍</button>
+      <button class="header-btn" title="More options">⋮</button>
+    </div>
+  </div>
+
+  <!-- Background decorative pattern -->
+  <div class="chat-bg">
+    <svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <!-- Subtle food doodles pattern -->
+      <circle cx="50" cy="50" r="18" stroke="white" stroke-width="1.5"/>
+      <circle cx="350" cy="100" r="22" stroke="white" stroke-width="1.5"/>
+      <path d="M80 150 Q100 130 120 150 Q100 170 80 150Z" stroke="white" stroke-width="1.5"/>
+      <rect x="200" y="200" width="30" height="40" rx="4" stroke="white" stroke-width="1.5"/>
+      <path d="M60 300 C60 280 90 280 90 300 C90 320 60 320 60 300Z" stroke="white" stroke-width="1.5"/>
+      <circle cx="320" cy="350" r="15" stroke="white" stroke-width="1.5"/>
+      <circle cx="330" cy="345" r="8" stroke="white" stroke-width="1.2"/>
+      <path d="M150 420 Q160 400 170 420 Q160 440 150 420Z" stroke="white" stroke-width="1.5"/>
+      <rect x="250" y="470" width="25" height="35" rx="4" stroke="white" stroke-width="1.5"/>
+      <circle cx="80" cy="520" r="20" stroke="white" stroke-width="1.5"/>
+      <path d="M340 500 Q360 480 380 500 Q360 520 340 500Z" stroke="white" stroke-width="1.5"/>
+      <circle cx="200" cy="100" r="12" stroke="white" stroke-width="1.2"/>
+      <path d="M20 400 C20 380 50 380 50 400 C50 420 20 420 20 400Z" stroke="white" stroke-width="1.2"/>
+    </svg>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages" id="messages">
+    <!-- Welcome card -->
+    <div class="welcome-card">
+      <div class="welcome-logo">🏪</div>
+      <div class="welcome-title">Sharadha Stores</div>
+      <div class="welcome-sub">Homemade South Indian Food since 1974<br/>Ask me anything about our products!</div>
+      <div class="welcome-chips">
+        <span class="chip">🚚 Delivery</span>
+        <span class="chip">🕐 Shelf Life</span>
+        <span class="chip">🧂 Ingredients</span>
+        <span class="chip">💰 Pricing</span>
+        <span class="chip">📦 Bulk Orders</span>
+      </div>
+    </div>
+
+    <!-- Date divider -->
+    <div class="date-divider" id="dateDivider"></div>
+  </div>
+
+  <!-- Quick Reply Chips -->
+  <div class="quick-replies" id="quickReplies">
+    <button class="quick-btn" onclick="sendQuick('What products do you sell?')">Products</button>
+    <button class="quick-btn" onclick="sendQuick('How long does delivery take?')">Delivery</button>
+    <button class="quick-btn" onclick="sendQuick('What is the shelf life of your snacks?')">Shelf life</button>
+    <button class="quick-btn" onclick="sendQuick('Do you take bulk orders?')">Bulk orders</button>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <div class="input-row">
+      <input
+        type="text"
+        id="userInput"
+        placeholder="Type a message..."
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') sendMessage()"
+      />
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        ➤
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Config ──
+  // Change this to your deployed backend URL when on Render!
+  const BACKEND_URL = "http://localhost:5000";
+
+  let chatHistory = [];
+  let isLoading = false;
+
+  // Set today's date in divider
+  const dateDiv = document.getElementById('dateDivider');
+  const today = new Date();
+  dateDiv.textContent = today.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
+
+  function getTime() {
+    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  function appendMessage(text, role) {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+
+    if (role === 'bot') {
+      row.innerHTML = `
+        <div class="bot-icon">🍛</div>
+        <div>
+          <div class="bubble bot">${formatText(text)}</div>
+          <div class="bubble-time">${getTime()}</div>
+        </div>`;
+    } else {
+      row.innerHTML = `
+        <div>
+          <div class="bubble user">${escapeHtml(text)}</div>
+          <div class="bubble-time">${getTime()}</div>
+        </div>`;
+    }
+
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function formatText(text) {
+    // Convert **bold**, bullet points, line breaks
+    return escapeHtml(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br/>');
+  }
+
+  function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'typingRow';
+    row.innerHTML = `
+      <div class="bot-icon">🍛</div>
+      <div class="typing"><span></span><span></span><span></span></div>`;
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingRow');
+    if (t) t.remove();
+  }
+
+  function hideQuickReplies() {
+    document.getElementById('quickReplies').style.display = 'none';
+  }
+
+  async function sendMessage() {
+    if (isLoading) return;
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    hideQuickReplies();
+    input.value = '';
+    appendMessage(text, 'user');
+
+    isLoading = true;
+    document.getElementById('sendBtn').disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: chatHistory })
+      });
+
+      const data = await res.json();
+      removeTyping();
+
+      if (data.reply) {
+        chatHistory.push({ role: 'user', content: text });
+        chatHistory.push({ role: 'assistant', content: data.reply });
+        appendMessage(data.reply, 'bot');
+      } else {
+        appendMessage('Sorry, I couldn\'t get a response. Please try again!', 'bot');
+      }
+    } catch (err) {
+      removeTyping();
+      appendMessage('⚠️ Cannot connect to server. Make sure the backend is running on localhost:5000 (or update BACKEND_URL).', 'bot');
+    }
+
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+    input.focus();
+  }
+
+  function sendQuick(text) {
+    document.getElementById('userInput').value = text;
+    sendMessage();
+  }
+</script>
+</body>
+</html>
