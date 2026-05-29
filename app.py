@@ -14,7 +14,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # Example setting up your FAQ bot with the recommended model
-model = genai.GenerativeModel('gemini-3.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 # ─────────────────────────────────────────────
 #  REAL SharadhaStores Knowledge Base
